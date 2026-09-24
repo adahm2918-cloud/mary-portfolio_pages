@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow | Mary Adah</title>
+  <style>
+    :root { --ink: #182022; --muted: #687477; --paper: #f5f7f4; --card: #ffffff; --lime: #a7ff31; --line: #dce3dc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 Arial, sans-serif; }
+    .app { max-width: 1160px; margin: 0 auto; padding: 28px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 38px; }
+    .brand { font-weight: 800; font-size: 1.25rem; } .brand span { color: #5b8d12; }
+    .back { color: var(--muted); text-decoration: none; font-weight: 700; }
+    .intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 30px; }
+    h1 { max-width: 630px; margin: 0; font-size: clamp(2.4rem, 6vw, 4.8rem); line-height: .96; letter-spacing: 0; }
+    .intro p { max-width: 320px; margin: 0; color: var(--muted); }
+    .board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .column { min-height: 390px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.65); }
+    .column-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-weight: 800; }
+    .count { display: grid; width: 24px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: #e7eee3; color: #416703; font-size: .75rem; }
+    .task { position: relative; margin-bottom: 12px; padding: 16px; border-radius: 7px; background: var(--card); box-shadow: 0 8px 22px rgba(15, 30, 18, .07); }
+    .task.done { opacity: .62; } .task.done strong { text-decoration: line-through; }
+    .task strong { display: block; margin-bottom: 8px; font-size: 1rem; } .task small { color: var(--muted); }
+    .task button { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: #7b8587; font-size: 1rem; cursor: pointer; }
+    .tag { display: inline-block; margin-top: 13px; padding: 4px 8px; border-radius: 3px; background: #eef7df; color: #4c780b; font-size: .75rem; font-weight: 800; }
+    form { display: flex; gap: 10px; margin-top: 22px; } input { flex: 1; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; } button[type="submit"] { border: 0; border-radius: 6px; padding: 0 18px; background: var(--ink); color: white; font-weight: 800; cursor: pointer; }
+    .hint { margin-top: 12px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 760px) { .app { padding: 20px; } .intro, header { align-items: flex-start; flex-direction: column; } .board { grid-template-columns: 1fr; } .column { min-height: auto; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><div class="brand">Task<span>Flow</span></div><a class="back" href="../index.html#work">Back to portfolio</a></header>
+    <section class="intro"><h1>Keep your next move clear.</h1><p>A simple task-management app that lets users add work, move it through a workflow, and keep completed tasks visible.</p></section>
+    <section class="board" aria-label="Task board">
+      <div class="column"><div class="column-head">To do <span class="count" data-count="todo">0</span></div><div id="todo" class="tasks"></div></div>
+      <div class="column"><div class="column-head">In progress <span class="count" data-count="progress">0</span></div><div id="progress" class="tasks"></div></div>
+      <div class="column"><div class="column-head">Complete <span class="count" data-count="done">0</span></div><div id="done" class="tasks"></div></div>
+    </section>
+    <form id="task-form"><input id="task-input" required maxlength="80" placeholder="Add a new task"><button type="submit">Add task</button></form>
+    <p class="hint">Click a task to move it forward. Your tasks are saved in this browser.</p>
+  </main>
+  <script>
+    const key = 'mary-taskflow';
+    const defaultTasks = [
+      { title: 'Review project requirements', stage: 'todo', tag: 'Planning' },
+      { title: 'Build responsive dashboard', stage: 'progress', tag: 'Development' },
+      { title: 'Publish landing page', stage: 'done', tag: 'Launch' }
+    ];
+    let tasks = JSON.parse(localStorage.getItem(key)) || defaultTasks;
+    const stages = ['todo', 'progress', 'done'];
+    function save() { localStorage.setItem(key, JSON.stringify(tasks)); }
+    function render() {
+      stages.forEach(stage => document.getElementById(stage).innerHTML = '');
+      tasks.forEach((task, index) => {
+        const item = document.createElement('article');
+        item.className = `task ${task.stage === 'done' ? 'done' : ''}`;
+        item.innerHTML = `<strong>${task.title}</strong><small>Click to move to the next stage</small><span class="tag">${task.tag}</span><button aria-label="Delete task">x</button>`;
+        item.addEventListener('click', event => { if (event.target.tagName !== 'BUTTON') { task.stage = stages[(stages.indexOf(task.stage) + 1) % stages.length]; save(); render(); } });
+        item.querySelector('button').addEventListener('click', () => { tasks.splice(index, 1); save(); render(); });
+        document.getElementById(task.stage).append(item);
+      });
+      stages.forEach(stage => document.querySelector(`[data-count="${stage}"]`).textContent = tasks.filter(task => task.stage === stage).length);
+    }
+    document.getElementById('task-form').addEventListener('submit', event => { event.preventDefault(); const input = document.getElementById('task-input'); tasks.unshift({ title: input.value.trim(), stage: 'todo', tag: 'New task' }); input.value = ''; save(); render(); });
+    render();
+  </script>
+</body>
+</html>

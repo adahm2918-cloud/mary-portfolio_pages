@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnLoop | Mary Adah</title>
+  <style>
+    :root { --ink: #132324; --muted: #647276; --paper: #f5f7f3; --card: #ffffff; --lime: #a6ff32; --line: #dce5db; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 Arial, sans-serif; }
+    .app { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 60px; }
+    header, .course-head, .course-meta, .course-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    header { margin-bottom: 42px; }
+    .brand { font-size: 1.25rem; font-weight: 800; } .brand span { color: #5f9818; }
+    .back { color: var(--muted); font-weight: 700; text-decoration: none; }
+    .intro { display: grid; grid-template-columns: 1.25fr .75fr; gap: 22px; margin-bottom: 24px; }
+    .intro-copy, .progress-card, .course { border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+    .intro-copy { padding: clamp(26px, 5vw, 52px); background: var(--ink); color: white; }
+    h1 { max-width: 620px; margin: 0; font-size: clamp(2.5rem, 6vw, 5rem); line-height: .96; letter-spacing: 0; }
+    .intro-copy p { max-width: 500px; margin: 22px 0 0; color: #cdd6d1; font-size: 1.04rem; }
+    .progress-card { display: grid; align-content: center; padding: 30px; }
+    .progress-card span { color: var(--muted); font-weight: 700; } .progress-card strong { margin: 10px 0 15px; font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; }
+    .progress-bar { height: 10px; overflow: hidden; border-radius: 8px; background: #e6eee4; } .progress-bar i { display: block; width: 0; height: 100%; background: var(--lime); transition: width .2s ease; }
+    .progress-card small { margin-top: 14px; color: var(--muted); }
+    .section-title { margin: 36px 0 18px; font-size: 1.05rem; }
+    .courses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .course { padding: 22px; } .course h2 { margin: 0; font-size: 1.25rem; } .course > p { min-height: 44px; margin: 10px 0 18px; color: var(--muted); }
+    .course-meta { padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .86rem; }
+    .course-footer { margin-top: 18px; } .complete { border: 0; border-radius: 5px; padding: 10px 12px; background: #edf6df; color: #4a760c; font: inherit; font-weight: 800; cursor: pointer; } .complete.is-done { background: var(--ink); color: white; }
+    .status { font-size: .85rem; font-weight: 700; }
+    @media (max-width: 780px) { .app { width: min(100% - 28px, 1120px); } header { margin-bottom: 28px; } .intro, .courses { grid-template-columns: 1fr; } .intro-copy { padding: 30px 24px; } .course > p { min-height: auto; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><div class="brand">Learn<span>Loop</span></div><a class="back" href="../index.html#work">Back to portfolio</a></header>
+    <section class="intro">
+      <div class="intro-copy"><h1>Make learning feel manageable.</h1><p>A responsive learning dashboard that helps learners see their active courses and mark lessons complete at their own pace.</p></div>
+      <aside class="progress-card"><span>Learning progress</span><strong id="percent">0%</strong><div class="progress-bar"><i id="progress"></i></div><small id="progress-copy">Complete a course to begin.</small></aside>
+    </section>
+    <h2 class="section-title">Your active courses</h2>
+    <section class="courses" aria-label="Active courses">
+      <article class="course" data-course="html"><h2>Modern HTML &amp; CSS</h2><p>Build structured, accessible pages that adapt beautifully to every screen size.</p><div class="course-meta"><span>12 lessons</span><span>Beginner</span></div><div class="course-footer"><span class="status">Not started</span><button class="complete" type="button">Mark complete</button></div></article>
+      <article class="course" data-course="javascript"><h2>JavaScript Essentials</h2><p>Use state, events, and browser storage to create useful interactive features.</p><div class="course-meta"><span>18 lessons</span><span>Intermediate</span></div><div class="course-footer"><span class="status">Not started</span><button class="complete" type="button">Mark complete</button></div></article>
+      <article class="course" data-course="api"><h2>Working with APIs</h2><p>Connect interfaces to external data and design clear loading and error states.</p><div class="course-meta"><span>9 lessons</span><span>Intermediate</span></div><div class="course-footer"><span class="status">Not started</span><button class="complete" type="button">Mark complete</button></div></article>
+    </section>
+  </main>
+  <script>
+    const key = 'mary-learnloop';
+    const courses = [...document.querySelectorAll('.course')];
+    let complete = JSON.parse(localStorage.getItem(key)) || [];
+    function render() {
+      courses.forEach(course => {
+        const isDone = complete.includes(course.dataset.course);
+        course.querySelector('.complete').textContent = isDone ? 'Completed' : 'Mark complete';
+        course.querySelector('.complete').classList.toggle('is-done', isDone);
+        course.querySelector('.status').textContent = isDone ? 'Complete' : 'Not started';
+      });
+      const value = Math.round((complete.length / courses.length) * 100);
+      document.getElementById('percent').textContent = `${value}%`;
+      document.getElementById('progress').style.width = `${value}%`;
+      document.getElementById('progress-copy').textContent = value === 100 ? 'All courses completed.' : `${complete.length} of ${courses.length} courses completed.`;
+    }
+    courses.forEach(course => course.querySelector('.complete').addEventListener('click', () => {
+      const id = course.dataset.course;
+      complete = complete.includes(id) ? complete.filter(courseId => courseId !== id) : [...complete, id];
+      localStorage.setItem(key, JSON.stringify(complete));
+      render();
+    }));
+    render();
+  </script>
+</body>
+</html>
